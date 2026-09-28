@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Pedidos</title>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f2f4f7;
+    color: #222;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #1565c0;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.contenedor {
+    max-width: 700px;
+    margin: auto;
+    padding: 15px;
+}
+
+.archivo {
+    background: white;
+    padding: 18px;
+    border-radius: 14px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.archivo-titulo {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: #fafafa;
+}
+
+#estadoArchivo {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 10px;
+    display: none;
+}
+
+.ok {
+    display: block !important;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+.error {
+    display: block !important;
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.buscador {
+    background: white;
+    padding: 15px;
+    border-radius: 14px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.buscador-fila {
+    display: flex;
+    gap: 8px;
+}
+
+#buscar {
+    flex: 1;
+    font-size: 18px;
+    padding: 15px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    outline: none;
+}
+
+#buscar:focus {
+    border-color: #1565c0;
+}
+
+#btnVoz {
+    width: 58px;
+    border: none;
+    border-radius: 12px;
+    background: #1565c0;
+    color: white;
+    font-size: 25px;
+}
+
+.resultado {
+    background: white;
+    padding: 15px;
+    border-radius: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+
+.codigo {
+    color: #1565c0;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.descripcion {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 6px 0;
+}
+
+.precio {
+    font-size: 18px;
+    margin-bottom: 12px;
+}
+
+.btnAgregar {
+    width: 100%;
+    padding: 14px;
+    background: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.sinResultados {
+    background: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 12px;
+    color: #777;
+}
+
+.pedido {
+    background: white;
+    padding: 15px;
+    border-radius: 14px;
+    margin-top: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
+
+.pedido h2 {
+    color: #1565c0;
+}
+
+.pedido-item {
+    border-bottom: 1px solid #ddd;
+    padding: 12px 0;
+}
+
+.pedido-descripcion {
+    font-weight: bold;
+    font-size: 17px;
+    margin: 6px 0;
+}
+
+.pedido-codigo {
+    font-size: 13px;
+    color: #666;
+}
+
+.controles {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.btnCantidad {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 8px;
+    background: #1565c0;
+    color: white;
+    font-size: 22px;
+}
+
+.cantidad {
+    min-width: 40px;
+    text-align: center;
+    font-size: 19px;
+    font-weight: bold;
+}
+
+.subtotal {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+.btnEliminar {
+    margin-top: 8px;
+    border: none;
+    background: #e53935;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.total {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: right;
+    padding: 18px 0;
+    color: #1565c0;
+}
+
+.acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.acciones button {
+    padding: 14px 8px;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.btnWhatsApp {
+    background: #25d366;
+}
+
+.btnCopiar {
+    background: #555;
+}
+
+.btnImprimir {
+    background: #1565c0;
+}
+
+.btnLimpiar {
+    background: #e53935;
+}
+
+.escuchando {
+    background: #c62828 !important;
+}
+
+@media print {
+    header,
+    .archivo,
+    .buscador,
+    #resultados,
+    .acciones,
+    .btnEliminar,
+    .btnCantidad {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+
+    .contenedor {
+        max-width: 100%;
+    }
+
+    .pedido {
+        box-shadow: none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+🛒 PEDIDOS
+</header>
+
+<div class="contenedor">
+
+    <div class="archivo">
+
+        <div class="archivo-titulo">
+            📂 Base de artículos
+        </div>
+
+        <input
+            type="file"
+            id="archivoExcel"
+            accept=".xlsx,.xls"
+        >
+
+        <div id="estadoArchivo"></div>
+
+    </div>
+
+
+    <div class="buscador">
+
+        <div class="buscador-fila">
+
+            <input
+                type="text"
+                id="buscar"
+                placeholder="Buscar por código o descripción..."
+                autocomplete="off"
+            >
+
+            <button id="btnVoz">
+                🎤
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div id="resultados"></div>
+
+
+    <div class="pedido">
+
+        <h2>
+            📋 Mi pedido
+        </h2>
+
+        <div id="listaPedido">
+
+            <div class="sinResultados">
+                Todavía no agregaste artículos.
+            </div>
+
+        </div>
+
+        <div class="total">
+            Total: $<span id="total">0,00</span>
+        </div>
+
+        <div class="acciones">
+
+            <button
+                class="btnWhatsApp"
+                onclick="enviarWhatsApp()"
+            >
+                📱 WhatsApp
+            </button>
+
+            <button
+                class="btnCopiar"
+                onclick="copiarPedido()"
+            >
+                📋 Copiar
+            </button>
+
+            <button
+                class="btnImprimir"
+                onclick="window.print()"
+            >
+                🖨️ Imprimir
+            </button>
+
+            <button
+                class="btnLimpiar"
+                onclick="limpiarPedido()"
+            >
+                🗑️ Vaciar pedido
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let articulos = [];
+
+let pedido = [];
+
+
+/* =====================================================
+   CARGAR EXCEL
+===================================================== */
+
+document
+.getElementById("archivoExcel")
+.addEventListener("change", function(event) {
+
+    const archivo = event.target.files[0];
+
+    const estado =
+        document.getElementById("estadoArchivo");
+
+    if (!archivo) {
+        return;
+    }
+
+    estado.className = "ok";
+
+    estado.innerHTML =
+        "📄 <strong>Archivo encontrado:</strong> "
+        + archivo.name
+        + "<br>⏳ Cargando artículos...";
+
+
+    const lector = new FileReader();
+
+
+    lector.onload = function(e) {
+
+        try {
+
+            const datos =
+                new Uint8Array(e.target.result);
+
+            const libro =
+                XLSX.read(datos, {
+                    type: "array"
+                });
+
+            const nombreHoja =
+                libro.SheetNames[0];
+
+            const hoja =
+                libro.Sheets[nombreHoja];
+
+
+            const filas =
+                XLSX.utils.sheet_to_json(
+                    hoja,
+                    {
+                        header: 1,
+                        raw: false,
+                        defval: ""
+                    }
+                );
+
+
+            articulos = [];
+
+
+            for (
+                let i = 1;
+                i < filas.length;
+                i++
+            ) {
+
+                const fila = filas[i];
+
+                const codigo =
+                    String(fila[0] || "").trim();
+
+                const descripcion =
+                    String(fila[1] || "").trim();
+
+                const importe =
+                    convertirImporte(fila[3]);
+
+
+                if (!codigo && !descripcion) {
+                    continue;
+                }
+
+
+                articulos.push({
+
+                    indice: i,
+
+                    codigo: codigo,
+
+                    descripcion: descripcion,
+
+                    importe: importe
+
+                });
+
+            }
+
+
+            estado.className = "ok";
+
+            estado.innerHTML =
+                "✅ <strong>Archivo encontrado y cargado correctamente</strong>"
+                + "<br>📄 "
+                + archivo.name
+                + "<br>📦 "
+                + articulos.length
+                + " artículos cargados.";
+
+
+            document
+                .getElementById("resultados")
+                .innerHTML = "";
+
+            document
+                .getElementById("buscar")
+                .value = "";
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            estado.className = "error";
+
+            estado.innerHTML =
+                "❌ <strong>Error al leer el archivo.</strong>";
+
+            articulos = [];
+
+        }
+
+    };
+
+
+    lector.onerror = function() {
+
+        estado.className = "error";
+
+        estado.innerHTML =
+            "❌ No se pudo leer el archivo.";
+
+    };
+
+
+    lector.readAsArrayBuffer(archivo);
+
+});
+
+
+/* =====================================================
+   IMPORTE
+===================================================== */
+
+function convertirImporte(valor) {
+
+    if (typeof valor === "number") {
+        return valor;
+    }
+
+
+    let texto =
+        String(valor || "")
+        .trim()
+        .replace(/\s/g, "");
+
+
+    if (!texto) {
+        return 0;
+    }
+
+
+    if (
+        texto.includes(".")
+        &&
+        texto.includes(",")
+    ) {
+
+        texto =
+            texto
+            .replace(/\./g, "")
+            .replace(",", ".");
+
+    }
+
+    else if (texto.includes(",")) {
+
+        texto =
+            texto.replace(",", ".");
+
+    }
+
+
+    const numero =
+        parseFloat(texto);
+
+
+    return isNaN(numero)
+        ? 0
+        : numero;
+
+}
+
+
+/* =====================================================
+   FORMATO DINERO
+===================================================== */
+
+function dinero(numero) {
+
+    return Number(numero).toLocaleString(
+        "es-AR",
+        {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }
+    );
+
+}
+
+
+/* =====================================================
+   NORMALIZAR MEDIDAS
+===================================================== */
+
+function normalizarMedidas(texto) {
+
+    let resultado =
+        String(texto || "")
+        .toLowerCase()
+        .trim();
+
+
+    /*
+       Convierte:
+
+       6 por 41
+       6 por41
+       6por 41
+       6 x 41
+       6x 41
+       6 x41
+
+       en:
+
+       6x41
+    */
+
+    resultado =
+        resultado.replace(
+            /(\d+)\s*(?:por|x)\s*(\d+)/gi,
+            "$1x$2"
+        );
+
+
+    /*
+       Elimina ceros delante de medidas:
+
+       06x41 -> 6x41
+       006x041 -> 6x41
+    */
+
+    resultado =
+        resultado.replace(
+            /\b0+(\d+)x0*(\d+)\b/g,
+            "$1x$2"
+        );
+
+
+    return resultado;
+
+}
+
+
+/* =====================================================
+   BUSCAR
+===================================================== */
+
+document
+.getElementById("buscar")
+.addEventListener(
+    "input",
+    buscar
+);
+
+
+function buscar() {
+
+    let texto =
+        document
+        .getElementById("buscar")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    const resultados =
+        document.getElementById("resultados");
+
+
+    if (!texto) {
+
+        resultados.innerHTML = "";
+
+        return;
+
+    }
+
+
+    if (articulos.length === 0) {
+
+        resultados.innerHTML =
+            '<div class="sinResultados">'
+            + '⚠️ Primero seleccioná el archivo Excel.'
+            + '</div>';
+
+        return;
+
+    }
+
+
+    /*
+       Normalizamos la búsqueda.
+
+       Ejemplo:
+
+       tornillos 6 por 41
+
+       se convierte internamente en:
+
+       tornillos 6x41
+    */
+
+    texto =
+        normalizarMedidas(texto);
+
+
+    const encontrados =
+        articulos.filter(function(articulo) {
+
+            const codigo =
+                normalizarMedidas(
+                    articulo.codigo.toLowerCase()
+                );
+
+            const descripcion =
+                normalizarMedidas(
+                    articulo.descripcion.toLowerCase()
+                );
+
+
+            return (
+
+                codigo.includes(texto)
+
+                ||
+
+                descripcion.includes(texto)
+
+            );
+
+        });
+
+
+    if (encontrados.length === 0) {
+
+        resultados.innerHTML =
+            '<div class="sinResultados">'
+            + 'No se encontraron artículos.'
+            + '</div>';
+
+        return;
+
+    }
+
+
+    resultados.innerHTML = "";
+
+
+    encontrados
+    .slice(0, 100)
+    .forEach(function(articulo) {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "resultado";
+
+
+        div.innerHTML = `
+
+            <div class="codigo">
+                Código:
+                ${escapar(articulo.codigo)}
+            </div>
+
+            <div class="descripcion">
+                ${escapar(articulo.descripcion)}
+            </div>
+
+            <div class="precio">
+                $${dinero(articulo.importe)}
+            </div>
+
+            <button
+                class="btnAgregar"
+                onclick="agregar(${articulo.indice})"
+            >
+                ➕ AGREGAR AL PEDIDO
+            </button>
+
+        `;
+
+
+        resultados.appendChild(div);
+
+    });
+
+}
+
+
+/* =====================================================
+   ESCAPAR TEXTO
+===================================================== */
+
+function escapar(texto) {
+
+    return String(texto)
+
+        .replace(/&/g, "&amp;")
+
+        .replace(/</g, "&lt;")
+
+        .replace(/>/g, "&gt;")
+
+        .replace(/"/g, "&quot;")
+
+        .replace(/'/g, "&#039;");
+
+}
+
+
+/* =====================================================
+   AGREGAR
+===================================================== */
+
+function agregar(
+    indice,
+    cantidad = 1
+) {
+
+    const articulo =
+        articulos.find(function(a) {
+
+            return a.indice === indice;
+
+        });
+
+
+    if (!articulo) {
+        return;
+    }
+
+
+    const existente =
+        pedido.find(function(item) {
+
+            return item.indice === indice;
+
+        });
+
+
+    if (existente) {
+
+        existente.cantidad += cantidad;
+
+    }
+
+    else {
+
+        pedido.push({
+
+            indice:
+                articulo.indice,
+
+            codigo:
+                articulo.codigo,
+
+            descripcion:
+                articulo.descripcion,
+
+            importe:
+                articulo.importe,
+
+            cantidad:
+                cantidad
+
+        });
+
+    }
+
+
+    mostrarPedido();
+
+
+    document
+    .querySelector(".pedido")
+    .scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =====================================================
+   MOSTRAR PEDIDO
+===================================================== */
+
+function mostrarPedido() {
+
+    const lista =
+        document.getElementById("listaPedido");
+
+
+    if (pedido.length === 0) {
+
+        lista.innerHTML =
+            '<div class="sinResultados">'
+            + 'Todavía no agregaste artículos.'
+            + '</div>';
+
+        document
+            .getElementById("total")
+            .textContent = "0,00";
+
+        return;
+
+    }
+
+
+    lista.innerHTML = "";
+
+
+    let total = 0;
+
+
+    pedido.forEach(
+        function(item, index) {
+
+            const subtotal =
+                item.importe
+                *
+                item.cantidad;
+
+
+            total += subtotal;
+
+
+            const div =
+                document.createElement("div");
+
+
+            div.className =
+                "pedido-item";
+
+
+            div.innerHTML = `
+
+                <div class="pedido-codigo">
+                    Código:
+                    ${escapar(item.codigo)}
+                </div>
+
+                <div class="pedido-descripcion">
+                    ${escapar(item.descripcion)}
+                </div>
+
+                <div>
+                    Precio:
+                    $${dinero(item.importe)}
+                </div>
+
+                <div class="controles">
+
+                    <button
+                        class="btnCantidad"
+                        onclick="menos(${index})"
+                    >
+                        −
+                    </button>
+
+                    <div class="cantidad">
+                        ${item.cantidad}
+                    </div>
+
+                    <button
+                        class="btnCantidad"
+                        onclick="mas(${index})"
+                    >
+                        +
+                    </button>
+
+                    <div class="subtotal">
+                        $${dinero(subtotal)}
+                    </div>
+
+                </div>
+
+                <button
+                    class="btnEliminar"
+                    onclick="eliminar(${index})"
+                >
+                    🗑️ Eliminar
+                </button>
+
+            `;
+
+
+            lista.appendChild(div);
+
+        }
+    );
+
+
+    document
+        .getElementById("total")
+        .textContent =
+        dinero(total);
+
+}
+
+
+/* =====================================================
+   CANTIDADES
+===================================================== */
+
+function mas(index) {
+
+    pedido[index].cantidad++;
+
+    mostrarPedido();
+
+}
+
+
+function menos(index) {
+
+    if (pedido[index].cantidad > 1) {
+
+        pedido[index].cantidad--;
+
+    }
+
+    else {
+
+        pedido.splice(index, 1);
+
+    }
+
+
+    mostrarPedido();
+
+}
+
+
+function eliminar(index) {
+
+    pedido.splice(index, 1);
+
+    mostrarPedido();
+
+}
+
+
+/* =====================================================
+   LIMPIAR
+===================================================== */
+
+function limpiarPedido() {
+
+    if (pedido.length === 0) {
+        return;
+    }
+
+
+    if (
+        confirm(
+            "¿Querés vaciar todo el pedido?"
+        )
+    ) {
+
+        pedido = [];
+
+        mostrarPedido();
+
+    }
+
+}
+
+
+/* =====================================================
+   TEXTO PEDIDO
+===================================================== */
+
+function textoPedido() {
+
+    let texto =
+        "PEDIDO\n\n";
+
+
+    let total = 0;
+
+
+    pedido.forEach(function(item) {
+
+        const subtotal =
+            item.importe
+            *
+            item.cantidad;
+
+
+        total += subtotal;
+
+
+        texto +=
+
+            item.cantidad
+            + " x "
+            + item.descripcion
+            + " | Código: "
+            + item.codigo
+            + " | $"
+            + dinero(subtotal)
+            + "\n";
+
+    });
+
+
+    texto +=
+        "\nTOTAL: $"
+        + dinero(total);
+
+
+    return texto;
+
+}
+
+
+/* =====================================================
+   COPIAR
+===================================================== */
+
+function copiarPedido() {
+
+    if (pedido.length === 0) {
+
+        alert(
+            "El pedido está vacío."
+        );
+
+        return;
+
+    }
+
+
+    navigator.clipboard.writeText(
+        textoPedido()
+    )
+    .then(function() {
+
+        alert(
+            "✅ Pedido copiado."
+        );
+
+    });
+
+}
+
+
+/* =====================================================
+   CREAR PDF
+===================================================== */
+
+function generarPDF() {
+
+    const {
+        jsPDF
+    } = window.jspdf;
+
+
+    const doc =
+        new jsPDF({
+            unit: "mm",
+            format: "a4"
+        });
+
+
+    let y = 20;
+
+
+    /*
+       Título
+    */
+
+    doc.setFontSize(20);
+
+    doc.setFont(undefined, "bold");
+
+    doc.text(
+        "PEDIDO",
+        20,
+        y
+    );
+
+
+    y += 10;
+
+
+    /*
+       Fecha
+    */
+
+    doc.setFontSize(10);
+
+    doc.setFont(undefined, "normal");
+
+    const fecha =
+        new Date()
+        .toLocaleString("es-AR");
+
+
+    doc.text(
+        "Fecha: " + fecha,
+        20,
+        y
+    );
+
+
+    y += 12;
+
+
+    let total = 0;
+
+
+    pedido.forEach(function(item) {
+
+        const subtotal =
+            item.importe
+            *
+            item.cantidad;
+
+
+        total += subtotal;
+
+
+        /*
+           Descripción
+        */
+
+        doc.setFontSize(12);
+
+        doc.setFont(undefined, "bold");
+
+
+        const descripcion =
+            doc.splitTextToSize(
+                item.descripcion,
+                170
+            );
+
+
+        /*
+           Si no entra el artículo,
+           pasamos a otra página.
+        */
+
+        if (
+            y + descripcion.length * 6
+            > 270
+        ) {
+
+            doc.addPage();
+
+            y = 20;
+
+        }
+
+
+        doc.text(
+            descripcion,
+            20,
+            y
+        );
+
+
+        y +=
+            descripcion.length * 6;
+
+
+        doc.setFontSize(10);
+
+        doc.setFont(undefined, "normal");
+
+
+        doc.text(
+            "Codigo: "
+            + item.codigo,
+            20,
+            y
+        );
+
+
+        y += 5;
+
+
+        doc.text(
+            "Cantidad: "
+            + item.cantidad,
+            20,
+            y
+        );
+
+
+        y += 5;
+
+
+        doc.text(
+            "Precio unitario: $"
+            + dinero(item.importe),
+            20,
+            y
+        );
+
+
+        y += 5;
+
+
+        doc.text(
+            "Subtotal: $"
+            + dinero(subtotal),
+            20,
+            y
+        );
+
+
+        y += 9;
+
+
+        doc.line(
+            20,
+            y,
+            190,
+            y
+        );
+
+
+        y += 8;
+
+    });
+
+
+    /*
+       Total
+    */
+
+    if (y > 270) {
+
+        doc.addPage();
+
+        y = 20;
+
+    }
+
+
+    doc.setFontSize(16);
+
+    doc.setFont(undefined, "bold");
+
+
+    doc.text(
+        "TOTAL: $"
+        + dinero(total),
+        20,
+        y
+    );
+
+
+    return doc;
+
+}
+
+
+/* =====================================================
+   PDF COMO ARCHIVO
+===================================================== */
+
+function obtenerArchivoPDF() {
+
+    const doc =
+        generarPDF();
+
+
+    const blob =
+        doc.output("blob");
+
+
+    return new File(
+        [blob],
+        "Pedido.pdf",
+        {
+            type: "application/pdf"
+        }
+    );
+
+}
+
+
+/* =====================================================
+   WHATSAPP + PDF
+===================================================== */
+
+async function enviarWhatsApp() {
+
+    if (pedido.length === 0) {
+
+        alert(
+            "El pedido está vacío."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        /*
+           Generamos el PDF.
+        */
+
+        const archivo =
+            obtenerArchivoPDF();
+
+
+        /*
+           En celulares compatibles,
+           usamos el menú de compartir
+           del sistema.
+
+           Allí se puede seleccionar
+           WhatsApp y el PDF viaja
+           como archivo adjunto.
+        */
+
+        if (
+            navigator.share
+            &&
+            navigator.canShare
+            &&
+            navigator.canShare({
+                files: [archivo]
+            })
+        ) {
+
+            try {
+
+                await navigator.share({
+
+                    title: "Pedido",
+
+                    text:
+                        "Pedido en PDF",
+
+                    files: [archivo]
+
+                });
+
+
+                return;
+
+            }
+
+            catch (error) {
+
+                /*
+                   Si el usuario cancela
+                   el menú de compartir,
+                   simplemente salimos.
+                */
+
+                if (
+                    error.name ===
+                    "AbortError"
+                ) {
+
+                    return;
+
+                }
+
+            }
+
+        }
+
+
+        /*
+           Si el dispositivo no permite
+           compartir archivos directamente,
+           descargamos el PDF.
+        */
+
+        const enlace =
+            document.createElement("a");
+
+
+        enlace.href =
+            URL.createObjectURL(
+                archivo
+            );
+
+
+        enlace.download =
+            "Pedido.pdf";
+
+
+        document.body.appendChild(
+            enlace
+        );
+
+
+        enlace.click();
+
+
+        document.body.removeChild(
+            enlace
+        );
+
+
+        setTimeout(
+            function() {
+
+                URL.revokeObjectURL(
+                    enlace.href
+                );
+
+            },
+            1000
+        );
+
+
+        alert(
+            "📄 Se generó Pedido.pdf.\n\n"
+            +
+            "Abrí el archivo y compartilo por WhatsApp."
+        );
+
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        alert(
+            "No se pudo generar el PDF."
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   VOZ
+===================================================== */
+
+const btnVoz =
+    document.getElementById("btnVoz");
+
+
+const Reconocimiento =
+    window.SpeechRecognition
+    ||
+    window.webkitSpeechRecognition;
+
+
+if (Reconocimiento) {
+
+    const reconocimiento =
+        new Reconocimiento();
+
+
+    reconocimiento.lang =
+        "es-AR";
+
+
+    reconocimiento.continuous =
+        false;
+
+
+    reconocimiento.interimResults =
+        false;
+
+
+    btnVoz.onclick =
+        function() {
+
+            try {
+
+                reconocimiento.start();
+
+            }
+
+            catch (error) {
+
+                console.log(error);
+
+            }
+
+        };
+
+
+    reconocimiento.onstart =
+        function() {
+
+            btnVoz.classList.add(
+                "escuchando"
+            );
+
+            btnVoz.textContent =
+                "🔴";
+
+        };
+
+
+    reconocimiento.onresult =
+        function(event) {
+
+            let texto =
+                event
+                .results[0][0]
+                .transcript;
+
+
+            texto =
+                texto
+                .toLowerCase()
+                .trim();
+
+
+            /*
+               Normalizamos medidas.
+
+               Ejemplos:
+
+               6 por 41
+               6x41
+               6 x 41
+               06 x 41
+               06x41
+
+               terminan como:
+
+               6x41
+            */
+
+            texto =
+                normalizarMedidas(
+                    texto
+                );
+
+
+            /*
+               Buscamos una cantidad
+               al comienzo.
+
+               Ejemplo:
+
+               "10 tornillos 6x41"
+
+               queda:
+
+               cantidad = 10
+
+               búsqueda =
+               "tornillos 6x41"
+            */
+
+            let cantidad =
+                1;
+
+            let cantidadDetectada =
+                false;
+
+
+            const coincidencia =
+                texto.match(
+                    /^(\d+)\s+(.+)$/
+                );
+
+
+            if (coincidencia) {
+
+                cantidad =
+                    parseInt(
+                        coincidencia[1],
+                        10
+                    );
+
+
+                texto =
+                    coincidencia[2]
+                    .trim();
+
+
+                if (
+                    cantidad > 0
+                ) {
+
+                    cantidadDetectada =
+                        true;
+
+                }
+
+            }
+
+
+            /*
+               Mostramos solamente
+               la descripción buscada
+               en el cuadro.
+            */
+
+            document
+                .getElementById("buscar")
+                .value = texto;
+
+
+            /*
+               Ejecutamos la búsqueda.
+            */
+
+            buscar();
+
+
+            /*
+               Si encontramos un único
+               artículo y la persona
+               indicó cantidad por voz,
+               lo agregamos automáticamente.
+            */
+
+            const encontrados =
+                articulos.filter(
+                    function(articulo) {
+
+                        const codigo =
+                            normalizarMedidas(
+                                articulo.codigo
+                                .toLowerCase()
+                            );
+
+
+                        const descripcion =
+                            normalizarMedidas(
+                                articulo.descripcion
+                                .toLowerCase()
+                            );
+
+
+                        return (
+
+                            codigo.includes(
+                                texto
+                            )
+
+                            ||
+
+                            descripcion.includes(
+                                texto
+                            )
+
+                        );
+
+                    }
+                );
+
+
+            if (
+                cantidadDetectada
+                &&
+                encontrados.length === 1
+            ) {
+
+                agregar(
+                    encontrados[0].indice,
+                    cantidad
+                );
+
+            }
+
+        };
+
+
+    reconocimiento.onend =
+        function() {
+
+            btnVoz.classList.remove(
+                "escuchando"
+            );
+
+            btnVoz.textContent =
+                "🎤";
+
+        };
+
+
+    reconocimiento.onerror =
+        function(event) {
+
+            console.log(
+                "Error de voz:",
+                event.error
+            );
+
+            btnVoz.classList.remove(
+                "escuchando"
+            );
+
+            btnVoz.textContent =
+                "🎤";
+
+        };
+
+}
+
+
+else {
+
+    btnVoz.disabled = true;
+
+}
+
+
+/* =====================================================
+   INICIO
+===================================================== */
+
+mostrarPedido();
+
+</script>
+
+</body>
+</html>
